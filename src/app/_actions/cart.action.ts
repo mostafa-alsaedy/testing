@@ -3,20 +3,32 @@
 import { getUserToken } from "@/lib/auth"
 
 export async function addToCart(productId: string) {
-    const token = await getUserToken()
-    if (!token) {
-        throw new Error("You must be Logged in to do this action")
-    }
-    const response = await fetch("https://ecommerce.routemisr.com/api/v1/cart", {
-        method: "POST",
-        body: JSON.stringify({ productId: productId }),
-        headers: {
-            token: token,
-            "Content-Type": "application/json"
+    try {
+        const token = await getUserToken()
+        if (!token) {
+            throw new Error("You must be Logged in to do this action")
         }
-    })
-    const data = await response.json()
-    return data
+        const response = await fetch("https://ecommerce.routemisr.com/api/v1/cart", {
+            method: "POST",
+            body: JSON.stringify({ productId: productId }),
+            headers: {
+                token: token,
+                "Content-Type": "application/json"
+            }
+        })
+        const data = await response.json()
+        
+        if (!response.ok) {
+            throw new Error(data.message || "Failed to add product to cart")
+        }
+        
+        return data
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error
+        }
+        throw new Error("An unexpected error occurred")
+    }
 }
 export async function getLoggedUserCart() {
     const token = await getUserToken()
